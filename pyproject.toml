@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ecommerce-knowledge-graph"
 version = "1.0.0"
-description = "Evidence-grounded e-commerce graph retrieval with NetworkX and OpenAI"
+description = "Evidence-grounded e-commerce graph retrieval with NetworkX, OpenAI and Groq"
 requires-python = ">=3.10"
 dependencies = [
   "networkx>=3.4,<4",

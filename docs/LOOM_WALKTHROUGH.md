@@ -5,7 +5,7 @@
 ## Preparation
 
 1. Follow the README setup and activate `.venv`.
-2. Set your OpenAI key in `.env` to demonstrate the live LLM flow. Keep `.env` closed and out of the recording.
+2. Set `GROQ_API_KEY` and `GROQ_MODEL=openai/gpt-oss-20b` in `.env` to demonstrate the tested live LLM flow, or configure OpenAI. Keep `.env` closed and out of the recording.
 3. Run `streamlit run app.py`; open the browser page.
 4. Open the README, `src/ecommerce_kg/graph.py`, `query.py`, `llm.py`, `service.py` and the sample dataset in your editor.
 5. Open Loom's desktop app or browser recorder; select the project browser/editor window and microphone. Record approximately 5–7 minutes.
@@ -14,7 +14,7 @@
 
 Suggested narration:
 
-> “This is a Python e-commerce knowledge graph with AI-powered retrieval. NetworkX holds a directed property graph, so there is no database-server setup. OpenAI translates natural-language questions into a typed, read-only graph query. The retriever executes it and returns evidence; a second LLM call chooses the answer presentation, and the application renders only retrieved values.”
+> “This is a Python e-commerce knowledge graph with AI-powered retrieval. NetworkX holds a directed property graph, so there is no database-server setup. Groq or OpenAI translates natural-language questions into a typed, read-only graph query. The retriever executes it and returns evidence; a second LLM call chooses the answer presentation, and the application renders only retrieved values.”
 
 Show the README flow diagram and sidebar graph counts.
 
@@ -28,13 +28,13 @@ Point out `Customer → PLACED → Order → CONTAINS → Product`, and `Vendor 
 
 ## 1:30–2:40 — Query process and live LLM integration
 
-Choose **OpenAI live**, ask:
+Choose **Groq live** (or **OpenAI live** with its own key), ask:
 
 > Which products from Brand X are supplied by Vendor Y?
 
 Click **Retrieve answer**, then expand **Validated graph query** and **Retrieved evidence and relationship provenance**.
 
-> “The first OpenAI call receives the graph schema and graph-sourced entity catalog. It returns a structured QueryPlan. Pydantic checks every property, alias, edge direction and type. The retriever filters candidates and traverses the matching relationships. These four rows are Wireless Headphones, Mechanical Keyboard, Ceramic Coffee Mug and Trail Water Bottle.”
+> “The first LLM call receives the graph schema and graph-sourced entity catalog. In this demonstration it uses OpenAI's GPT-OSS 20B model hosted by Groq. It returns a structured QueryPlan. Pydantic checks every property, alias, edge direction and type. The retriever filters candidates and traverses the matching relationships. These four rows are Wireless Headphones, Mechanical Keyboard, Ceramic Coffee Mug and Trail Water Bottle.”
 
 Show the two calls in `llm.py` and the schema in `query.py`. Explain that the first call generates JSON rather than executable code, and that traversal has bounded resource budgets.
 
@@ -91,14 +91,14 @@ ecommerce-kg inspect
 pytest -q
 ```
 
-> “The bundled offline mode uses predefined sample plans and still performs real graph retrieval. It is clearly labeled, so it is distinguishable from live OpenAI mode. The tests verify sample answers, five occurrences, invalid query rejection, deduplication and aggregates, and refusal of fabricated evidence. A mocked HTTP integration test verifies both OpenAI SDK calls without needing a key.”
+> “The bundled offline mode uses predefined sample plans and still performs real graph retrieval. It is clearly labeled, so it is distinguishable from live LLM mode. The tests verify sample answers, five occurrences, invalid query rejection, deduplication and aggregates, and refusal of fabricated evidence. Mocked HTTP tests verify both providers without needing a key, and the repository also contains actual live Groq results.”
 
 ## Finish and submit
 
 1. Stop recording and wait for Loom to publish.
-2. Title the recording **E-commerce Knowledge Graph — NetworkX + OpenAI**.
+2. Title the recording **E-commerce Knowledge Graph — NetworkX + Groq/OpenAI**.
 3. Ensure reviewers can view the link.
 4. Replace the Loom URL placeholder in `README.md` and mark its recording status complete.
 5. Submit the project directory and the published Loom URL together.
 
-If recording only the offline demonstration, explicitly state that the demonstration uses predefined queries and show the configured OpenAI code separately; do not describe offline execution as a live LLM call.
+If recording only the offline demonstration, explicitly state that the demonstration uses predefined queries and show the configured live-provider code separately; do not describe offline execution as a live LLM call.

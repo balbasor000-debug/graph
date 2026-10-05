@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 from ecommerce_kg.examples import SAMPLE_QUERIES
 from ecommerce_kg.graph import graph_stats, load_graph
-from ecommerce_kg.llm import BackendError, OfflineBackend, OpenAIBackend
+from ecommerce_kg.llm import BackendError, create_backend
 from ecommerce_kg.retrieval import GraphRetriever
 from ecommerce_kg.service import RetrievalService
 from ecommerce_kg.visualization import graph_dot
@@ -28,9 +28,10 @@ def get_graph():
 graph = get_graph()
 stats = graph_stats(graph)
 with st.sidebar:
-    mode = st.radio("Backend", ["Offline demo", "OpenAI live"])
+    modes = {"Offline demo": "offline", "OpenAI live": "openai", "Groq live": "groq"}
+    mode = st.radio("Backend", list(modes))
     st.caption(
-        "Offline uses predefined queries. OpenAI live supports new natural-language questions "
+        "Offline uses predefined queries. Groq/OpenAI support new natural-language questions "
         "and makes query-planning and evidence-presentation calls."
     )
     st.metric("Entities", stats["nodes"])
@@ -43,7 +44,7 @@ with ask_tab:
     question = st.text_area("Question", value=sample, key=f"question_{sample}")
     if st.button("Retrieve answer", type="primary"):
         try:
-            backend = OpenAIBackend(graph) if mode == "OpenAI live" else OfflineBackend()
+            backend = create_backend(modes[mode], graph)
             with st.spinner("Planning, retrieving and verifying evidence…"):
                 answer = RetrievalService(GraphRetriever(graph), backend).ask(question)
             st.session_state["answer"] = answer

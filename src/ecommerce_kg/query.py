@@ -37,7 +37,7 @@ class FieldRef(StrictModel):
 
 class PropertyFilter(FieldRef):
     op: Literal["eq", "ne", "contains", "gt", "gte", "lt", "lte"]
-    value: str | int | float | bool
+    value: str | int
 
 
 class Sort(FieldRef):

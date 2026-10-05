@@ -38,3 +38,52 @@ def test_streamlit_demo_has_graph_counts_and_retrieves_five_products():
     assert all(f"[R{index}]" in text for index in range(1, 6))
     app.selectbox[1].select("Last answer evidence").run()
     assert not app.exception
+
+
+def test_cli_accepts_groq_and_reports_missing_key_without_a_network_call(monkeypatch, capsys):
+    # An explicit empty variable prevents the local .env from supplying a real test key.
+    monkeypatch.setenv("GROQ_API_KEY", "")
+    assert main(["ask", "List the products", "--mode", "groq"]) == 1
+    assert "GROQ_API_KEY" in capsys.readouterr().err
+
+
+def test_streamlit_groq_selection_uses_the_selected_backend(monkeypatch):
+    pytest.importorskip("streamlit")
+    from streamlit.testing.v1 import AppTest
+
+    from ecommerce_kg.llm import OfflineBackend
+
+    calls = []
+
+    class MockGroqBackend(OfflineBackend):
+        name = "groq"
+
+    def factory(mode, graph, model=None):
+        calls.append(mode)
+        return MockGroqBackend()
+
+    monkeypatch.setattr("ecommerce_kg.llm.create_backend", factory)
+    app = AppTest.from_file(str(Path(__file__).parents[1] / "app.py"), default_timeout=30).run()
+    app.radio[0].set_value("Groq live").run()
+    app.selectbox[0].select("How many products contain the keyword banana?").run()
+    app.button[0].click().run()
+    assert not app.exception and not app.error
+    assert calls == ["groq"]
+    assert app.session_state["answer"].backend == "groq"
+    assert app.session_state["answer"].retrieval.rows[0].values == {"count(p)": 5}
+
+
+def test_demo_pacing_waits_between_questions_only(monkeypatch, tmp_path, capsys):
+    waits = []
+    monkeypatch.setattr("ecommerce_kg.cli.time.sleep", waits.append)
+    destination = tmp_path / "paced_results.json"
+    assert main(["demo", "--delay-seconds", "2", "--output", str(destination)]) == 0
+    assert waits == [2.0] * 9
+    assert len(json.loads(destination.read_text())) == 10
+    capsys.readouterr()
+
+
+@pytest.mark.parametrize("delay", ["-1", "nan"])
+def test_invalid_demo_pacing_is_rejected(delay, capsys):
+    assert main(["demo", "--delay-seconds", delay]) == 1
+    assert "--delay-seconds must be" in capsys.readouterr().err

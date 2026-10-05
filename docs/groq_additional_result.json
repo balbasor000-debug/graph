@@ -1,0 +1,174 @@
+{
+  "model": "openai/gpt-oss-20b",
+  "question": "Which vendors supply products in Groceries?",
+  "backend": "groq",
+  "query": {
+    "nodes": [
+      {
+        "alias": "v",
+        "kind": "Vendor"
+      },
+      {
+        "alias": "p",
+        "kind": "Product"
+      },
+      {
+        "alias": "c",
+        "kind": "Category"
+      }
+    ],
+    "edges": [
+      {
+        "alias": "e1",
+        "source": "v",
+        "target": "p",
+        "relationship": "SUPPLIES"
+      },
+      {
+        "alias": "e2",
+        "source": "p",
+        "target": "c",
+        "relationship": "IN_CATEGORY"
+      }
+    ],
+    "filters": [
+      {
+        "alias": "c",
+        "field": "name",
+        "op": "eq",
+        "value": "Groceries"
+      }
+    ],
+    "select": [
+      {
+        "alias": "v",
+        "field": "id"
+      },
+      {
+        "alias": "v",
+        "field": "name"
+      }
+    ],
+    "aggregate": null,
+    "distinct": true,
+    "order_by": [
+      {
+        "alias": "v",
+        "field": "id",
+        "direction": "asc"
+      }
+    ],
+    "limit": 20
+  },
+  "retrieval": {
+    "rows": [
+      {
+        "evidence_id": "R1",
+        "values": {
+          "v.id": "V001",
+          "v.name": "Vendor Y"
+        },
+        "node_ids": [
+          "C002",
+          "P004",
+          "P008",
+          "V001"
+        ],
+        "edges": [
+          {
+            "source": "P004",
+            "relationship": "IN_CATEGORY",
+            "target": "C002"
+          },
+          {
+            "source": "P008",
+            "relationship": "IN_CATEGORY",
+            "target": "C002"
+          },
+          {
+            "source": "V001",
+            "relationship": "SUPPLIES",
+            "target": "P004"
+          },
+          {
+            "source": "V001",
+            "relationship": "SUPPLIES",
+            "target": "P008"
+          }
+        ]
+      },
+      {
+        "evidence_id": "R2",
+        "values": {
+          "v.id": "V002",
+          "v.name": "Orchard Supply"
+        },
+        "node_ids": [
+          "C002",
+          "P004",
+          "P005",
+          "P006",
+          "P007",
+          "P008",
+          "V002"
+        ],
+        "edges": [
+          {
+            "source": "P004",
+            "relationship": "IN_CATEGORY",
+            "target": "C002"
+          },
+          {
+            "source": "P005",
+            "relationship": "IN_CATEGORY",
+            "target": "C002"
+          },
+          {
+            "source": "P006",
+            "relationship": "IN_CATEGORY",
+            "target": "C002"
+          },
+          {
+            "source": "P007",
+            "relationship": "IN_CATEGORY",
+            "target": "C002"
+          },
+          {
+            "source": "P008",
+            "relationship": "IN_CATEGORY",
+            "target": "C002"
+          },
+          {
+            "source": "V002",
+            "relationship": "SUPPLIES",
+            "target": "P004"
+          },
+          {
+            "source": "V002",
+            "relationship": "SUPPLIES",
+            "target": "P005"
+          },
+          {
+            "source": "V002",
+            "relationship": "SUPPLIES",
+            "target": "P006"
+          },
+          {
+            "source": "V002",
+            "relationship": "SUPPLIES",
+            "target": "P007"
+          },
+          {
+            "source": "V002",
+            "relationship": "SUPPLIES",
+            "target": "P008"
+          }
+        ]
+      }
+    ],
+    "total_rows": 2,
+    "matched_bindings": 7,
+    "truncated": false
+  },
+  "answer": "| v.id | v.name | Evidence |\n| --- | --- | --- |\n| V001 | Vendor Y | [R1] |\n| V002 | Orchard Supply | [R2] |\n\n**Evidence sources** (graph node IDs):\n- [R1]: C002, P004, P008, V001\n- [R2]: C002, P004, P005, P006, P007, P008, V002"
+}

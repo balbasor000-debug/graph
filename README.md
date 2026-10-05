@@ -1,22 +1,22 @@
 # E-commerce Knowledge Graph + AI Retrieval
 
-A working Python project using **NetworkX** for a directed property graph and **OpenAI** for natural-language query planning and evidence-based answer presentation. Includes a sample dataset, CLI, optional Streamlit interface, ten reproducible questions/results, and verification tests.
+A working Python project using **NetworkX** for a directed property graph and **Groq or OpenAI** for natural-language query planning and evidence-based answer presentation. Includes a sample dataset, CLI, optional Streamlit interface, ten reproducible questions/results, and verification tests. See the [assignment completion checklist](docs/REQUIREMENTS_CHECKLIST.md) for a requirement-by-requirement audit.
 
 ```text
 User question
     ↓
-OpenAI → structured graph query
+Groq/OpenAI → structured graph query
     ↓ schema/type/direction/budget validation
 NetworkX traversal → evidence rows + source nodes/relationships
     ↓
-OpenAI → structured answer presentation
+Groq/OpenAI → structured answer presentation
     ↓ evidence-ID validation + deterministic rendering
 Answer containing only retrieved graph values and computed aggregates
 ```
 
 ## 1. Setup
 
-**Requirements:** Python 3.10+ (3.12 recommended), internet for package installation. Live LLM mode additionally requires an OpenAI API key and a model that supports structured outputs. No Neo4j server is needed.
+**Requirements:** Python 3.10+ (3.12 recommended), internet for package installation. Live LLM mode additionally requires a Groq or OpenAI API key and a model that supports strict structured outputs. No Neo4j server is needed.
 
 From the project directory:
 
@@ -48,7 +48,7 @@ ecommerce-kg ask "Which products from Brand X are supplied by Vendor Y?" --trace
 ecommerce-kg ask "How many products contain the keyword banana?"
 ```
 
-`offline` is the default: it maps the ten documented sample questions to predefined query plans, then executes real graph retrieval. It is explicitly a deterministic demo backend, **not an LLM**. Capitalization, whitespace and final punctuation can vary. Use live mode for new natural-language questions.
+`offline` is the default: it maps the ten documented sample questions to predefined query plans, then executes real graph retrieval. It is explicitly a deterministic demo backend, **not an LLM**. Capitalization, whitespace and final punctuation can vary. Use `--mode groq` or `--mode openai` for new natural-language questions.
 
 The equivalent module entry point is `python -m ecommerce_kg`, for example:
 
@@ -56,7 +56,7 @@ The equivalent module entry point is `python -m ecommerce_kg`, for example:
 python -m ecommerce_kg inspect
 ```
 
-## 2. Live OpenAI integration
+## 2. Live LLM integration
 
 Copy the example environment file:
 
@@ -64,7 +64,31 @@ Copy the example environment file:
 cp .env.example .env
 ```
 
-Edit `.env`:
+### Groq
+
+Set these values in `.env`:
+
+```dotenv
+GROQ_API_KEY=your-groq-key-here
+GROQ_MODEL=openai/gpt-oss-20b
+```
+
+The Groq backend uses the existing OpenAI Python SDK with Groq's compatible endpoint, `https://api.groq.com/openai/v1`. It makes real LLM calls for both query planning and evidence presentation, with `strict: true` JSON-schema outputs and the same graph/answer validators. No additional SDK dependency is needed.
+
+```bash
+ecommerce-kg ask --mode groq "Which products from Brand X are supplied by Vendor Y?" --trace
+ecommerce-kg ask --mode groq "Which products contain the keyword banana?" --json
+ecommerce-kg ask --mode groq "What is the total value of delivered orders?"
+ecommerce-kg demo --mode groq --delay-seconds 65 --output docs/groq_sample_results.json
+```
+
+`openai/gpt-oss-20b` is the default Groq model. `openai/gpt-oss-120b` is another strict-structured-output model supported by Groq. Override with `--model MODEL_NAME` or `GROQ_MODEL`; check [Groq's supported structured-output models](https://console.groq.com/docs/structured-outputs) when selecting another model.
+
+The optional `--delay-seconds` (0..120) pauses between demo questions. A 65-second interval was used for the live batch to accommodate this account's token-per-minute limit. Individual CLI/UI questions also report provider rate-limit errors cleanly; no offline answer is substituted.
+
+### OpenAI
+
+For the OpenAI provider, set these values in `.env`:
 
 ```dotenv
 OPENAI_API_KEY=your-key-here
@@ -80,7 +104,7 @@ ecommerce-kg ask --mode openai "What is the total value of delivered orders?"
 ecommerce-kg demo --mode openai --output docs/live_results.json
 ```
 
-`--model MODEL_NAME` overrides `OPENAI_MODEL`. Live mode makes two structured-output calls for a nonempty result: query planning, then evidence presentation. Empty row results bypass the second call and return a fixed no-match response. API errors, refusals, invalid queries and invalid evidence IDs produce an error; live mode does not silently fall back to offline mode.
+`--model MODEL_NAME` overrides the selected provider's model setting. Each live provider makes two structured-output calls for a nonempty result: query planning, then evidence presentation. Empty row results bypass the second call and return a fixed no-match response. API errors, refusals, invalid queries and invalid evidence IDs produce an error; live mode does not silently fall back to offline mode.
 
 ## 3. Visual demonstration
 
@@ -88,7 +112,7 @@ ecommerce-kg demo --mode openai --output docs/live_results.json
 streamlit run app.py
 ```
 
-Open the printed local URL, normally `http://localhost:8501`. Choose **Offline demo** or **OpenAI live**, select/type a question and click **Retrieve answer**. Expand the query and evidence panels to inspect the full flow. The graph explorer shows the complete graph, the `banana` neighborhood, or the last answer's source nodes and exactly the retrieved relationships. Download buttons export answers/evidence and the graph.
+Open the printed local URL, normally `http://localhost:8501`. Choose **Groq live**, **OpenAI live** or **Offline demo**, select/type a question and click **Retrieve answer**. Expand the query and evidence panels to inspect the full flow. The graph explorer shows the complete graph, the `banana` neighborhood, or the last answer's source nodes and exactly the retrieved relationships. Download buttons export answers/evidence and the graph.
 
 ## 4. Dataset and knowledge graph
 
@@ -217,6 +241,10 @@ This design deliberately constrains the answer stage to evidence presentation, m
 
 These results were generated using the offline backend and real NetworkX retrieval. [`docs/sample_results.json`](docs/sample_results.json) contains all ten questions with their full query plans, raw rows, source nodes/edges and rendered answers.
 
+[`docs/groq_sample_results.json`](docs/groq_sample_results.json) records the same ten questions answered through the **live Groq API**, using `openai/gpt-oss-20b`, including the actual LLM-generated graph queries and retrieved evidence. Alias names, selected fields and presentation can differ between LLM runs; the underlying answers are checked against the same graph facts.
+
+A further live question outside the offline fixture set—**“Which vendors supply products in Groceries?”**—returned **Vendor Y** and **Orchard Supply**. Its generated query and evidence are saved in [`docs/groq_additional_result.json`](docs/groq_additional_result.json).
+
 | # | Question | Result |
 | --- | --- | --- |
 | 1 | Which products from Brand X are supplied by Vendor Y? | P001 Wireless Headphones ($79.99); P002 Mechanical Keyboard ($119.00); P003 Ceramic Coffee Mug ($12.50); P011 Trail Water Bottle ($22.00) |
@@ -240,9 +268,11 @@ ruff check .
 python -m compileall -q src app.py
 ```
 
-Tests cover sample-result correctness, relationship consistency, exactly five word occurrences, optional-property filters/sorting, text and ID validation, deduplication/provenance, aggregate join behavior, historical pricing, limit/budget behavior, invalid query rejection, no-match handling and rejection of fabricated evidence. The OpenAI integration test uses an HTTP mock through the **real SDK** to verify both structured calls, malformed/empty response handling and the evidence payload without an API key. The UI is exercised with Streamlit's test runner, and evidence visualization is checked for unrelated edges.
+Tests cover sample-result correctness, relationship consistency, exactly five word occurrences, optional-property filters/sorting, text and ID validation, deduplication/provenance, aggregate join behavior, historical pricing, limit/budget behavior, invalid query rejection, no-match handling and rejection of fabricated evidence. Both provider integrations use HTTP mocks through the **real SDK** to verify both structured calls and the evidence payload without an API key. Groq tests also check endpoint/model/key isolation and a non-overlapping integer/string filter schema. The UI is exercised with Streamlit's test runner, and evidence visualization is checked for unrelated edges.
 
-Local verification completed with **63 tests passed** on Python 3.12, lint passed and compilation passed. A clean wheel installation on Python 3.10 with minimum supported dependencies passed **62 tests**, with the optional Streamlit test skipped. See [`docs/VERIFICATION.md`](docs/VERIFICATION.md).
+Local verification completed with **95 tests passed** on Python 3.12, lint passed and compilation passed. Saved offline/live results are replayed against the graph and checked against independent expected facts. See [`docs/VERIFICATION.md`](docs/VERIFICATION.md) for compatibility checks and live-provider results.
+
+The updated wheel also passed **93 tests** on Python 3.10 with minimum supported dependencies; two optional Streamlit tests were skipped in that CLI-only environment.
 
 With uv installed, build distributable packages using:
 
@@ -252,7 +282,7 @@ uv build
 
 The wheel bundles the sample dataset. The source distribution also includes the UI, environment template, documentation and complete test fixtures, controlled by `MANIFEST.in`.
 
-Live OpenAI execution requires your API key; included offline results and mocked integration checks do not claim a live API run.
+Live **Groq** execution has been verified with the configured local key. Live **OpenAI** execution still requires an OpenAI key; its mocked SDK checks do not claim a live OpenAI API run. Keys are loaded from the ignored `.env` or environment variables; the repository and built packages include only `.env.example` with empty key fields.
 
 ## 9. Project layout
 
@@ -261,14 +291,14 @@ Live OpenAI execution requires your API key; included offline results and mocked
 ├── app.py                           # Optional Streamlit visual demonstration
 ├── pyproject.toml                   # Package, CLI, runtime/dev/ui dependencies
 ├── MANIFEST.in                      # Complete source-distribution contents
-├── .env.example                     # OpenAI configuration template
+├── .env.example                     # OpenAI/Groq configuration template
 ├── src/ecommerce_kg/
 │   ├── data/ecommerce.json           # Bundled sample dataset
 │   ├── graph.py                     # Validated graph construction + invariant + export
 │   ├── schema.py                    # Entity/property/relationship allowlist
 │   ├── query.py                     # Pydantic query and answer contracts
 │   ├── retrieval.py                 # NetworkX graph traversal + aggregates + provenance
-│   ├── llm.py                       # OpenAI and explicit offline demo backends
+│   ├── llm.py                       # OpenAI, Groq and explicit offline demo backends
 │   ├── service.py                   # Orchestration + evidence-only answer rendering
 │   ├── examples.py                  # Ten reproducible sample query plans
 │   ├── visualization.py             # Graphviz DOT generation
@@ -276,7 +306,10 @@ Live OpenAI execution requires your API key; included offline results and mocked
 ├── docs/
 │   ├── example_query.json           # Direct query example
 │   ├── sample_results.json          # Generated sample answers and evidence
+│   ├── groq_sample_results.json     # Live Groq questions, queries and evidence
+│   ├── groq_additional_result.json  # Live question outside the offline fixture set
 │   ├── VERIFICATION.md              # Tests, compatibility checks and review fixes
+│   ├── REQUIREMENTS_CHECKLIST.md     # Assignment requirements and deliverable status
 │   └── LOOM_WALKTHROUGH.md           # Recording script and demonstration checklist
 └── tests/                           # Retrieval, validation, integration and UI checks
 ```

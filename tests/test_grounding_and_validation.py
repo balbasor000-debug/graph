@@ -82,3 +82,13 @@ def test_currency_rendering_and_count_are_not_confused(retriever):
     text = render_answer(result, AnswerPlan(evidence_ids=["R1"], style="bullets"))
     assert "USD" not in text
     assert ": 7 [R1]" in text
+
+
+@pytest.mark.parametrize("value", [True, 3.5])
+def test_numeric_filters_accept_only_integer_graph_values(value):
+    with pytest.raises(ValidationError):
+        QueryPlan.model_validate({
+            "nodes": [{"alias": "p", "kind": "Product"}],
+            "filters": [{"alias": "p", "field": "price_cents", "op": "eq", "value": value}],
+            "select": [{"alias": "p", "field": "id"}],
+        })

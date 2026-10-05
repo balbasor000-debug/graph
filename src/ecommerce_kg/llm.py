@@ -1,4 +1,4 @@
-"""Two-stage OpenAI integration and an explicitly non-LLM offline demo backend."""
+"""Two-stage OpenAI/Groq integration and an explicitly non-LLM offline demo backend."""
 
 import json
 import os
@@ -43,7 +43,7 @@ class OfflineBackend:
                 return query.model_copy(deep=True)
         raise UnsupportedQuestion(
             "Offline mode supports the sample questions shown by 'ecommerce-kg questions'. "
-            "Use --mode openai for other natural-language questions."
+            "Use --mode groq or --mode openai for other natural-language questions."
         )
 
     def plan_answer(self, question: str, result: RetrievalResult) -> AnswerPlan:
@@ -65,6 +65,7 @@ Rules:
 - Dates are YYYY-MM-DD. Product.keyword is optional: ne includes missing values,
   while eq/contains/range filters exclude them. Sorting always places missing values last.
 - 'banana' is stored in Product.keyword; use keyword eq banana, not a name filter.
+- When listing products by keyword, also select their keyword so its stored value is visible.
 - count(alias) counts distinct matched entities/edges; field MUST be null.
 - sum(alias.field) sums each distinct matched entity/edge once, even after multi-hop joins.
 - For an aggregate: select=[] and order_by=[]. Do not use unsupported grouping/ranking.
@@ -86,12 +87,20 @@ and citations; no other factual content is permitted.
 
 class OpenAIBackend:
     name = "openai"
+    provider_label = "OpenAI"
+    key_env = "OPENAI_API_KEY"
+    model_env = "OPENAI_MODEL"
+    default_model = "gpt-4o-mini"
+    base_url = None
 
     def __init__(self, graph: nx.DiGraph, model: str | None = None, client=None):
-        self.model = model or os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-        if client is None and not os.getenv("OPENAI_API_KEY"):
-            raise ValueError("OPENAI_API_KEY is required for --mode openai; set it in .env")
-        self.client = client or OpenAI(timeout=45.0, max_retries=1)
+        self.model = model or os.getenv(self.model_env) or self.default_model
+        key = os.getenv(self.key_env)
+        if client is None and not key:
+            raise ValueError(f"{self.key_env} is required for --mode {self.name}; set it in .env")
+        self.client = client if client is not None else OpenAI(
+            api_key=key, base_url=self.base_url, timeout=45.0, max_retries=1,
+        )
         self.context = {
             "schema": schema_description(),
             "catalog": [
@@ -113,7 +122,8 @@ class OpenAIBackend:
         except OpenAIError as exc:
             # Avoid exposing keys, request payloads, or provider-specific details in CLI/UI.
             raise BackendError(
-                f"OpenAI request failed ({type(exc).__name__}). Check key, model and connection."
+                f"{self.provider_label} request failed ({type(exc).__name__}). "
+                "Check key, model and connection."
             ) from exc
         except ValidationError as exc:
             raise BackendError("The LLM returned an invalid structured response") from exc
@@ -137,3 +147,23 @@ class OpenAIBackend:
             AnswerPlan, ANSWER_INSTRUCTIONS,
             {"question": question, "evidence": result.to_dict()},
         )
+
+
+class GroqBackend(OpenAIBackend):
+    """Groq's OpenAI-compatible endpoint with a strict-structured-output model."""
+
+    name = "groq"
+    provider_label = "Groq"
+    key_env = "GROQ_API_KEY"
+    model_env = "GROQ_MODEL"
+    default_model = "openai/gpt-oss-20b"
+    base_url = "https://api.groq.com/openai/v1"
+
+
+def create_backend(mode: str, graph: nx.DiGraph, model: str | None = None) -> Backend:
+    if mode == "offline":
+        return OfflineBackend()
+    providers = {"openai": OpenAIBackend, "groq": GroqBackend}
+    if mode not in providers:
+        raise ValueError(f"Unknown backend mode: {mode}")
+    return providers[mode](graph, model=model)

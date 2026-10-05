@@ -3,13 +3,14 @@
 import argparse
 import json
 import sys
+import time
 from pathlib import Path
 
 from dotenv import load_dotenv
 
 from .examples import SAMPLE_QUERIES
 from .graph import export_graph, graph_stats, load_graph
-from .llm import BackendError, OfflineBackend, OpenAIBackend
+from .llm import BackendError, create_backend
 from .query import QueryPlan
 from .retrieval import GraphRetriever
 from .service import RetrievalService
@@ -33,14 +34,18 @@ def _parser():
     demo.add_argument(
         "--output", type=Path, help="Also save questions, queries and evidence as JSON"
     )
+    demo.add_argument(
+        "--delay-seconds", type=float, default=0,
+        help="Pause 0..120 seconds between demo questions for provider rate limits",
+    )
     query = commands.add_parser("query", help="Execute a validated JSON query plan from a file")
     query.add_argument("file", type=Path)
     query.add_argument("--json", action="store_true")
     query.add_argument("--trace", action="store_true")
     for command in (ask, demo, query):
-        command.add_argument("--mode", choices=("offline", "openai"), default="offline")
+        command.add_argument("--mode", choices=("offline", "openai", "groq"), default="offline")
         command.add_argument(
-            "--model", help="OpenAI model; defaults to OPENAI_MODEL or gpt-4o-mini"
+            "--model", help="Provider model; otherwise uses OPENAI_MODEL or GROQ_MODEL defaults"
         )
     return parser
 
@@ -49,6 +54,8 @@ def main(argv=None) -> int:
     args = _parser().parse_args(argv)
     load_dotenv(Path.cwd() / ".env", override=False)
     try:
+        if args.command == "demo" and not 0 <= args.delay_seconds <= 120:
+            raise ValueError("--delay-seconds must be between 0 and 120")
         if args.command == "questions":
             for index, question in enumerate(SAMPLE_QUERIES, 1):
                 print(f"{index}. {question}")
@@ -61,14 +68,19 @@ def main(argv=None) -> int:
             export_graph(graph, args.destination)
             print(f"Graph exported to {args.destination}")
             return 0
-        backend = OpenAIBackend(graph, args.model) if args.mode == "openai" else OfflineBackend()
+        backend = create_backend(args.mode, graph, args.model)
         service = RetrievalService(GraphRetriever(graph), backend)
         if args.command == "demo":
             answers = []
             for index, question in enumerate(SAMPLE_QUERIES, 1):
+                if index > 1 and args.delay_seconds:
+                    time.sleep(args.delay_seconds)
                 answer = service.ask(question)
                 answers.append(answer.to_dict())
-                print(f"\n## {index}. {question}\nBackend: {answer.backend}\n\n{answer.markdown}")
+                print(
+                    f"\n## {index}. {question}\nBackend: {answer.backend}\n\n{answer.markdown}",
+                    flush=True,
+                )
             if args.output:
                 args.output.write_text(json.dumps(answers, indent=2) + "\n", encoding="utf-8")
                 print(f"\nResults saved to {args.output}")
