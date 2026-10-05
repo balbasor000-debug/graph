@@ -33,7 +33,8 @@ class RetrievalResult:
 
 def _matches(actual, condition) -> bool:
     if actual is None:
-        return False
+        # Optional properties absent from a node differ from every supplied literal.
+        return condition.op == "ne"
     wanted = condition.value
     if isinstance(actual, str):
         actual, wanted = actual.casefold(), wanted.casefold()
@@ -164,13 +165,14 @@ class GraphRetriever:
             groups[key][1].append(binding)
         grouped = list(groups.values())
         for sort in reversed(plan.order_by):
-            grouped.sort(
-                key=lambda group: (
-                    group[0][sort.column] is None,
-                    group[0][sort.column] if group[0][sort.column] is not None else "",
-                ),
+            populated = [group for group in grouped if group[0][sort.column] is not None]
+            missing = [group for group in grouped if group[0][sort.column] is None]
+            populated.sort(
+                key=lambda group: group[0][sort.column],
                 reverse=sort.direction == "desc",
             )
+            # Stable sorting preserves lower-priority sort keys; nulls stay last either way.
+            grouped = populated + missing
         rows = []
         for index, (values, matches) in enumerate(grouped[:plan.limit], start=1):
             nodes, edges = provenance(matches)

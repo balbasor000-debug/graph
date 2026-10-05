@@ -1,0 +1,3 @@
+include .env.example .gitignore app.py
+recursive-include docs *.md *.json
+recursive-include tests *.py

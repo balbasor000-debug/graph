@@ -38,6 +38,8 @@ def test_real_sdk_two_structured_calls_retrieve_then_present(graph, retriever):
         calls.append(body)
         assert body["response_format"]["type"] == "json_schema"
         assert body["response_format"]["json_schema"]["strict"] is True
+        # Some structured-output models do not accept an explicit temperature.
+        assert "temperature" not in body
         if len(calls) == 1:
             decision = QueryDecision(query=SAMPLE_QUERIES[question])
             return completion(decision.model_dump_json())
@@ -54,6 +56,7 @@ def test_real_sdk_two_structured_calls_retrieve_then_present(graph, retriever):
     assert answer.backend == "openai"
     first_payload = json.loads(calls[0]["messages"][1]["content"])
     assert first_payload["schema"]["nodes"]["Product"]["keyword"] == "str"
+    assert first_payload["schema"]["relationships"]["CONTAINS"]["properties"]["quantity"] == "int"
     second_payload = json.loads(calls[1]["messages"][1]["content"])
     assert second_payload["evidence"] == answer.retrieval.to_dict()
     assert [row["values"]["p.id"] for row in second_payload["evidence"]["rows"]] == (
@@ -78,3 +81,21 @@ def test_live_backend_requires_key(graph, monkeypatch):
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     with pytest.raises(ValueError, match="OPENAI_API_KEY"):
         OpenAIBackend(graph)
+
+
+@pytest.mark.parametrize("content", ["not valid JSON", '{"query": {}}'])
+def test_malformed_structured_responses_fail_with_a_backend_error(graph, content):
+    with mock_client(lambda request: completion(content)) as client:
+        backend = OpenAIBackend(graph, client=client)
+        with pytest.raises(BackendError, match="invalid structured response"):
+            backend.plan_query("Which products contain the keyword banana?")
+
+
+def test_empty_completion_choices_fail_with_a_backend_error(graph):
+    response = httpx.Response(200, json={
+        "id": "empty", "object": "chat.completion", "created": 0,
+        "model": "gpt-4o-mini", "choices": [],
+    })
+    with mock_client(lambda request: response) as client:
+        with pytest.raises(BackendError, match="usable structured response"):
+            OpenAIBackend(graph, client=client).plan_query("List the products")

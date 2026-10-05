@@ -88,7 +88,7 @@ ecommerce-kg demo --mode openai --output docs/live_results.json
 streamlit run app.py
 ```
 
-Open the printed local URL, normally `http://localhost:8501`. Choose **Offline demo** or **OpenAI live**, select/type a question and click **Retrieve answer**. Expand the query and evidence panels to inspect the full flow. The graph explorer shows the complete graph, the `banana` neighborhood, or the last answer's source nodes. Download buttons export answers/evidence and the graph.
+Open the printed local URL, normally `http://localhost:8501`. Choose **Offline demo** or **OpenAI live**, select/type a question and click **Retrieve answer**. Expand the query and evidence panels to inspect the full flow. The graph explorer shows the complete graph, the `banana` neighborhood, or the last answer's source nodes and exactly the retrieved relationships. Download buttons export answers/evidence and the graph.
 
 ## 4. Dataset and knowledge graph
 
@@ -126,6 +126,8 @@ graph LR
 
 Each order is fulfilled by one vendor, which must supply all its items. Each product has one brand and category and at least one vendor. Each order has at most one line per product. The loader validates IDs, reference types, duplicates, dates, prices, quantities, vendor compatibility and the keyword invariant before freezing the graph structure.
 
+Surrounding whitespace is trimmed from text and reference IDs; whitespace-only values are rejected. Entity IDs must also be unique case-insensitively, matching the query language's case-insensitive ID lookup.
+
 Prices are integer **USD cents**, avoiding floating-point currency arithmetic. Order totals are derived from `quantity × historical unit_price_cents` on order items, not current catalog prices. Totals exclude tax/shipping, which are absent from the dataset. Queries include all order statuses unless a status is requested.
 
 ### The exactly-five `banana` requirement
@@ -157,10 +159,10 @@ NetworkX does not have Cypher, so the project defines a small JSON graph-query l
 
 - **nodes:** typed entity matches with aliases.
 - **edges:** directed, allowlisted relationships with aliases.
-- **filters:** property conditions (`eq`, `ne`, `contains`, `gt`, `gte`, `lt`, `lte`). String equality/contains are case-insensitive. Range comparisons support integer properties and ISO dates.
+- **filters:** property conditions (`eq`, `ne`, `contains`, `gt`, `gte`, `lt`, `lte`). String equality/contains are case-insensitive. Range comparisons support integer properties and ISO dates. For optional properties, `ne` includes missing values; other comparisons require a stored value. For example, `keyword ne banana` returns all seven products without that keyword.
 - **select:** graph properties to return, including order-item edge properties.
 - **aggregate:** optional distinct-entity/edge `count` or `sum` of an integer property.
-- **distinct, order_by, limit:** deduplication, sorting and a maximum of 100 returned rows.
+- **distinct, order_by, limit:** deduplication, sorting and a maximum of 100 returned rows. Missing property values sort last in both ascending and descending order.
 
 For the Brand X / Vendor Y question:
 
@@ -238,9 +240,17 @@ ruff check .
 python -m compileall -q src app.py
 ```
 
-Tests cover sample-result correctness, relationship consistency, exactly five word occurrences, deduplication/provenance, aggregate join behavior, limit/budget behavior, invalid query rejection, no-match handling and rejection of fabricated evidence. The OpenAI integration test uses an HTTP mock through the **real SDK** to verify both structured calls and the evidence payload without an API key. The UI is exercised with Streamlit's test runner.
+Tests cover sample-result correctness, relationship consistency, exactly five word occurrences, optional-property filters/sorting, text and ID validation, deduplication/provenance, aggregate join behavior, historical pricing, limit/budget behavior, invalid query rejection, no-match handling and rejection of fabricated evidence. The OpenAI integration test uses an HTTP mock through the **real SDK** to verify both structured calls, malformed/empty response handling and the evidence payload without an API key. The UI is exercised with Streamlit's test runner, and evidence visualization is checked for unrelated edges.
 
-Local verification completed with **48 tests passed**, lint passed and compilation passed. See [`docs/VERIFICATION.md`](docs/VERIFICATION.md).
+Local verification completed with **63 tests passed** on Python 3.12, lint passed and compilation passed. A clean wheel installation on Python 3.10 with minimum supported dependencies passed **62 tests**, with the optional Streamlit test skipped. See [`docs/VERIFICATION.md`](docs/VERIFICATION.md).
+
+With uv installed, build distributable packages using:
+
+```bash
+uv build
+```
+
+The wheel bundles the sample dataset. The source distribution also includes the UI, environment template, documentation and complete test fixtures, controlled by `MANIFEST.in`.
 
 Live OpenAI execution requires your API key; included offline results and mocked integration checks do not claim a live API run.
 
@@ -250,6 +260,7 @@ Live OpenAI execution requires your API key; included offline results and mocked
 .
 ├── app.py                           # Optional Streamlit visual demonstration
 ├── pyproject.toml                   # Package, CLI, runtime/dev/ui dependencies
+├── MANIFEST.in                      # Complete source-distribution contents
 ├── .env.example                     # OpenAI configuration template
 ├── src/ecommerce_kg/
 │   ├── data/ecommerce.json           # Bundled sample dataset
@@ -265,6 +276,7 @@ Live OpenAI execution requires your API key; included offline results and mocked
 ├── docs/
 │   ├── example_query.json           # Direct query example
 │   ├── sample_results.json          # Generated sample answers and evidence
+│   ├── VERIFICATION.md              # Tests, compatibility checks and review fixes
 │   └── LOOM_WALKTHROUGH.md           # Recording script and demonstration checklist
 └── tests/                           # Retrieval, validation, integration and UI checks
 ```

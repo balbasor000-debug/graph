@@ -9,11 +9,11 @@ from pathlib import Path
 from typing import Annotated, Literal
 
 import networkx as nx
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
 
 from .schema import RELATIONSHIPS
 
-NonEmpty = Annotated[str, Field(min_length=1, max_length=200)]
+NonEmpty = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
 Money = Annotated[int, Field(ge=0)]
 
 
@@ -96,10 +96,12 @@ def load_graph(dataset_path: str | Path | None = None) -> nx.DiGraph:
     )
     dataset = Dataset.model_validate_json(path.read_text(encoding="utf-8"))
     graph = nx.DiGraph(dataset_version=dataset.dataset_version, currency=dataset.currency)
+    seen_identifiers = set()
 
     def add_node(identifier, kind, **attrs):
-        if identifier in graph:
+        if identifier.casefold() in seen_identifiers:
             raise ValueError(f"Duplicate entity ID: {identifier}")
+        seen_identifiers.add(identifier.casefold())
         graph.add_node(identifier, id=identifier, kind=kind, **attrs)
 
     for kind, records in (

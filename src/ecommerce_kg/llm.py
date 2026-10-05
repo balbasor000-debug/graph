@@ -6,6 +6,7 @@ from typing import Protocol
 
 import networkx as nx
 from openai import OpenAI, OpenAIError
+from pydantic import ValidationError
 
 from .examples import SAMPLE_QUERIES
 from .query import AnswerPlan, QueryDecision, QueryPlan
@@ -58,8 +59,11 @@ Return query=null if unsupported, ambiguous, or asking for facts outside the gra
 Rules:
 - Every alias must be declared. Patterns must be connected; no Cartesian products.
 - Use the exact relationship direction. Edge aliases can select/filter CONTAINS properties.
-- String equality is case-insensitive. Values on numeric properties must be integer cents.
-- Prices are in USD: $50 is 5000 cents. Dates are YYYY-MM-DD.
+- String equality is case-insensitive. Numeric filter values must be integers.
+- Only monetary fields ending in _cents use USD cents: $50 is 5000 cents.
+  CONTAINS.quantity is an unscaled number of items, not a monetary amount.
+- Dates are YYYY-MM-DD. Product.keyword is optional: ne includes missing values,
+  while eq/contains/range filters exclude them. Sorting always places missing values last.
 - 'banana' is stored in Product.keyword; use keyword eq banana, not a name filter.
 - count(alias) counts distinct matched entities/edges; field MUST be null.
 - sum(alias.field) sums each distinct matched entity/edge once, even after multi-hop joins.
@@ -100,7 +104,6 @@ class OpenAIBackend:
         try:
             completion = self.client.beta.chat.completions.parse(
                 model=self.model,
-                temperature=0,
                 response_format=schema,
                 messages=[
                     {"role": "system", "content": instructions},
@@ -112,6 +115,10 @@ class OpenAIBackend:
             raise BackendError(
                 f"OpenAI request failed ({type(exc).__name__}). Check key, model and connection."
             ) from exc
+        except ValidationError as exc:
+            raise BackendError("The LLM returned an invalid structured response") from exc
+        if not completion.choices:
+            raise BackendError("The LLM did not return a usable structured response")
         message = completion.choices[0].message
         if message.refusal or message.parsed is None:
             raise BackendError("The LLM did not return a usable structured response")

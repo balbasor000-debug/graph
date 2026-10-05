@@ -43,7 +43,12 @@ def schema_description() -> dict:
             for kind, fields in NODE_FIELDS.items()
         },
         "relationships": {
-            kind: {"source": ends[0], "target": ends[1], "properties": list(EDGE_FIELDS[kind])}
+            kind: {
+                "source": ends[0], "target": ends[1],
+                "properties": {
+                    field: datatype.__name__ for field, datatype in EDGE_FIELDS[kind].items()
+                },
+            }
             for kind, ends in RELATIONSHIPS.items()
         },
     }

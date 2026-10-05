@@ -69,6 +69,7 @@ with graph_tab:
         "Graph view", ["All entities", "banana neighborhood", "Last answer evidence"]
     )
     selected = None
+    selected_edges = None
     if view == "banana neighborhood":
         tagged = {identifier for identifier, attrs in graph.nodes(data=True)
                   if attrs.get("keyword") == "banana"}
@@ -82,7 +83,14 @@ with graph_tab:
             {identifier for row in answer.retrieval.rows for identifier in row.node_ids}
             if answer is not None else set()
         )
-    st.graphviz_chart(graph_dot(graph, selected))
+        selected_edges = (
+            {
+                (edge["source"], edge["relationship"], edge["target"])
+                for row in answer.retrieval.rows for edge in row.edges
+            }
+            if answer is not None else set()
+        )
+    st.graphviz_chart(graph_dot(graph, selected, edge_ids=selected_edges))
     st.caption("Node colors identify entity types; arrows show relationship direction.")
     st.download_button(
         "Download knowledge graph JSON",
