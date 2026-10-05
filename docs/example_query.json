@@ -1,0 +1,7 @@
+{
+  "nodes": [{"alias": "p", "kind": "Product"}],
+  "filters": [{"alias": "p", "field": "keyword", "op": "eq", "value": "banana"}],
+  "select": [{"alias": "p", "field": "id"}, {"alias": "p", "field": "name"}, {"alias": "p", "field": "keyword"}],
+  "order_by": [{"alias": "p", "field": "id", "direction": "asc"}],
+  "limit": 20
+}

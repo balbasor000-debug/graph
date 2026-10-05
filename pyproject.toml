@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ecommerce-knowledge-graph"
+version = "1.0.0"
+description = "Evidence-grounded e-commerce graph retrieval with NetworkX and OpenAI"
+requires-python = ">=3.10"
+dependencies = [
+  "networkx>=3.4,<4",
+  "pydantic>=2.10,<3",
+  "openai>=1.68,<3",
+  "python-dotenv>=1.0,<2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10", "ruff>=0.9,<1"]
+ui = ["streamlit>=1.42,<2"]
+
+[project.scripts]
+ecommerce-kg = "ecommerce_kg.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+ecommerce_kg = ["data/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]

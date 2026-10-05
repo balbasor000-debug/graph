@@ -1,0 +1,50 @@
+{
+  "dataset_version": "1.0",
+  "currency": "USD",
+  "brands": [
+    {"id": "B001", "name": "Brand X"},
+    {"id": "B002", "name": "Fresh Valley"},
+    {"id": "B003", "name": "TechNest"}
+  ],
+  "categories": [
+    {"id": "C001", "name": "Electronics"},
+    {"id": "C002", "name": "Groceries"},
+    {"id": "C003", "name": "Home"},
+    {"id": "C004", "name": "Outdoors"}
+  ],
+  "vendors": [
+    {"id": "V001", "name": "Vendor Y", "city": "Austin"},
+    {"id": "V002", "name": "Orchard Supply", "city": "Seattle"},
+    {"id": "V003", "name": "Digital Depot", "city": "Boston"}
+  ],
+  "products": [
+    {"id": "P001", "name": "Wireless Headphones", "price_cents": 7999, "brand_id": "B001", "category_id": "C001", "vendor_ids": ["V001", "V003"]},
+    {"id": "P002", "name": "Mechanical Keyboard", "price_cents": 11900, "brand_id": "B001", "category_id": "C001", "vendor_ids": ["V001"]},
+    {"id": "P003", "name": "Ceramic Coffee Mug", "price_cents": 1250, "brand_id": "B001", "category_id": "C003", "vendor_ids": ["V001"]},
+    {"id": "P004", "name": "Organic Fruit Bunch", "price_cents": 350, "keyword": "banana", "brand_id": "B002", "category_id": "C002", "vendor_ids": ["V001", "V002"]},
+    {"id": "P005", "name": "Crispy Fruit Chips", "price_cents": 450, "keyword": "banana", "brand_id": "B002", "category_id": "C002", "vendor_ids": ["V002"]},
+    {"id": "P006", "name": "Breakfast Smoothie", "price_cents": 600, "keyword": "banana", "brand_id": "B002", "category_id": "C002", "vendor_ids": ["V002"]},
+    {"id": "P007", "name": "Fruit Snack Bar", "price_cents": 250, "keyword": "banana", "brand_id": "B002", "category_id": "C002", "vendor_ids": ["V002"]},
+    {"id": "P008", "name": "Fruit Bread", "price_cents": 700, "keyword": "banana", "brand_id": "B002", "category_id": "C002", "vendor_ids": ["V001", "V002"]},
+    {"id": "P009", "name": "Wireless Mouse", "price_cents": 2999, "brand_id": "B003", "category_id": "C001", "vendor_ids": ["V003"]},
+    {"id": "P010", "name": "Portable Speaker", "price_cents": 4999, "brand_id": "B003", "category_id": "C001", "vendor_ids": ["V003"]},
+    {"id": "P011", "name": "Trail Water Bottle", "price_cents": 2200, "brand_id": "B001", "category_id": "C004", "vendor_ids": ["V001"]},
+    {"id": "P012", "name": "Desk Lamp", "price_cents": 3499, "brand_id": "B003", "category_id": "C003", "vendor_ids": ["V003"]}
+  ],
+  "customers": [
+    {"id": "CU001", "name": "Alice Johnson", "city": "Austin"},
+    {"id": "CU002", "name": "Bob Smith", "city": "Seattle"},
+    {"id": "CU003", "name": "Carla Gomez", "city": "Seattle"},
+    {"id": "CU004", "name": "Dan Lee", "city": "Boston"},
+    {"id": "CU005", "name": "Eve Patel", "city": "Austin"}
+  ],
+  "orders": [
+    {"id": "O001", "customer_id": "CU001", "vendor_id": "V001", "placed_on": "2026-09-01", "status": "delivered", "items": [{"product_id": "P001", "quantity": 1, "unit_price_cents": 7999}, {"product_id": "P003", "quantity": 2, "unit_price_cents": 1250}]},
+    {"id": "O002", "customer_id": "CU002", "vendor_id": "V002", "placed_on": "2026-09-02", "status": "delivered", "items": [{"product_id": "P004", "quantity": 3, "unit_price_cents": 350}, {"product_id": "P005", "quantity": 2, "unit_price_cents": 450}]},
+    {"id": "O003", "customer_id": "CU001", "vendor_id": "V001", "placed_on": "2026-09-05", "status": "shipped", "items": [{"product_id": "P002", "quantity": 1, "unit_price_cents": 11900}, {"product_id": "P011", "quantity": 1, "unit_price_cents": 2200}]},
+    {"id": "O004", "customer_id": "CU003", "vendor_id": "V002", "placed_on": "2026-09-07", "status": "delivered", "items": [{"product_id": "P006", "quantity": 2, "unit_price_cents": 600}, {"product_id": "P007", "quantity": 4, "unit_price_cents": 250}]},
+    {"id": "O005", "customer_id": "CU004", "vendor_id": "V003", "placed_on": "2026-09-10", "status": "delivered", "items": [{"product_id": "P009", "quantity": 1, "unit_price_cents": 2999}, {"product_id": "P010", "quantity": 1, "unit_price_cents": 4999}]},
+    {"id": "O006", "customer_id": "CU005", "vendor_id": "V002", "placed_on": "2026-09-12", "status": "cancelled", "items": [{"product_id": "P008", "quantity": 1, "unit_price_cents": 700}, {"product_id": "P004", "quantity": 2, "unit_price_cents": 350}]},
+    {"id": "O007", "customer_id": "CU002", "vendor_id": "V001", "placed_on": "2026-09-15", "status": "delivered", "items": [{"product_id": "P001", "quantity": 1, "unit_price_cents": 7999}, {"product_id": "P004", "quantity": 1, "unit_price_cents": 350}]}
+  ]
+}

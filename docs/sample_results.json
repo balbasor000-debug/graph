@@ -1,0 +1,1099 @@
+[
+  {
+    "question": "Which products from Brand X are supplied by Vendor Y?",
+    "backend": "offline-demo (deterministic; no LLM calls)",
+    "query": {
+      "nodes": [
+        {
+          "alias": "p",
+          "kind": "Product"
+        },
+        {
+          "alias": "b",
+          "kind": "Brand"
+        },
+        {
+          "alias": "v",
+          "kind": "Vendor"
+        }
+      ],
+      "edges": [
+        {
+          "alias": "pb",
+          "source": "p",
+          "target": "b",
+          "relationship": "OF_BRAND"
+        },
+        {
+          "alias": "vp",
+          "source": "v",
+          "target": "p",
+          "relationship": "SUPPLIES"
+        }
+      ],
+      "filters": [
+        {
+          "alias": "b",
+          "field": "name",
+          "op": "eq",
+          "value": "Brand X"
+        },
+        {
+          "alias": "v",
+          "field": "name",
+          "op": "eq",
+          "value": "Vendor Y"
+        }
+      ],
+      "select": [
+        {
+          "alias": "p",
+          "field": "id"
+        },
+        {
+          "alias": "p",
+          "field": "name"
+        },
+        {
+          "alias": "p",
+          "field": "price_cents"
+        }
+      ],
+      "aggregate": null,
+      "distinct": true,
+      "order_by": [
+        {
+          "alias": "p",
+          "field": "id",
+          "direction": "asc"
+        }
+      ],
+      "limit": 20
+    },
+    "retrieval": {
+      "rows": [
+        {
+          "evidence_id": "R1",
+          "values": {
+            "p.id": "P001",
+            "p.name": "Wireless Headphones",
+            "p.price_cents": 7999
+          },
+          "node_ids": [
+            "B001",
+            "P001",
+            "V001"
+          ],
+          "edges": [
+            {
+              "source": "P001",
+              "relationship": "OF_BRAND",
+              "target": "B001"
+            },
+            {
+              "source": "V001",
+              "relationship": "SUPPLIES",
+              "target": "P001"
+            }
+          ]
+        },
+        {
+          "evidence_id": "R2",
+          "values": {
+            "p.id": "P002",
+            "p.name": "Mechanical Keyboard",
+            "p.price_cents": 11900
+          },
+          "node_ids": [
+            "B001",
+            "P002",
+            "V001"
+          ],
+          "edges": [
+            {
+              "source": "P002",
+              "relationship": "OF_BRAND",
+              "target": "B001"
+            },
+            {
+              "source": "V001",
+              "relationship": "SUPPLIES",
+              "target": "P002"
+            }
+          ]
+        },
+        {
+          "evidence_id": "R3",
+          "values": {
+            "p.id": "P003",
+            "p.name": "Ceramic Coffee Mug",
+            "p.price_cents": 1250
+          },
+          "node_ids": [
+            "B001",
+            "P003",
+            "V001"
+          ],
+          "edges": [
+            {
+              "source": "P003",
+              "relationship": "OF_BRAND",
+              "target": "B001"
+            },
+            {
+              "source": "V001",
+              "relationship": "SUPPLIES",
+              "target": "P003"
+            }
+          ]
+        },
+        {
+          "evidence_id": "R4",
+          "values": {
+            "p.id": "P011",
+            "p.name": "Trail Water Bottle",
+            "p.price_cents": 2200
+          },
+          "node_ids": [
+            "B001",
+            "P011",
+            "V001"
+          ],
+          "edges": [
+            {
+              "source": "P011",
+              "relationship": "OF_BRAND",
+              "target": "B001"
+            },
+            {
+              "source": "V001",
+              "relationship": "SUPPLIES",
+              "target": "P011"
+            }
+          ]
+        }
+      ],
+      "total_rows": 4,
+      "matched_bindings": 4,
+      "truncated": false
+    },
+    "answer": "| p.id | p.name | p.price (USD) | Evidence |\n| --- | --- | --- | --- |\n| P001 | Wireless Headphones | USD 79.99 | [R1] |\n| P002 | Mechanical Keyboard | USD 119.00 | [R2] |\n| P003 | Ceramic Coffee Mug | USD 12.50 | [R3] |\n| P011 | Trail Water Bottle | USD 22.00 | [R4] |\n\n**Evidence sources** (graph node IDs):\n- [R1]: B001, P001, V001\n- [R2]: B001, P002, V001\n- [R3]: B001, P003, V001\n- [R4]: B001, P011, V001"
+  },
+  {
+    "question": "Which products contain the keyword banana?",
+    "backend": "offline-demo (deterministic; no LLM calls)",
+    "query": {
+      "nodes": [
+        {
+          "alias": "p",
+          "kind": "Product"
+        }
+      ],
+      "edges": [],
+      "filters": [
+        {
+          "alias": "p",
+          "field": "keyword",
+          "op": "eq",
+          "value": "banana"
+        }
+      ],
+      "select": [
+        {
+          "alias": "p",
+          "field": "id"
+        },
+        {
+          "alias": "p",
+          "field": "name"
+        },
+        {
+          "alias": "p",
+          "field": "keyword"
+        }
+      ],
+      "aggregate": null,
+      "distinct": true,
+      "order_by": [
+        {
+          "alias": "p",
+          "field": "id",
+          "direction": "asc"
+        }
+      ],
+      "limit": 20
+    },
+    "retrieval": {
+      "rows": [
+        {
+          "evidence_id": "R1",
+          "values": {
+            "p.id": "P004",
+            "p.name": "Organic Fruit Bunch",
+            "p.keyword": "banana"
+          },
+          "node_ids": [
+            "P004"
+          ],
+          "edges": []
+        },
+        {
+          "evidence_id": "R2",
+          "values": {
+            "p.id": "P005",
+            "p.name": "Crispy Fruit Chips",
+            "p.keyword": "banana"
+          },
+          "node_ids": [
+            "P005"
+          ],
+          "edges": []
+        },
+        {
+          "evidence_id": "R3",
+          "values": {
+            "p.id": "P006",
+            "p.name": "Breakfast Smoothie",
+            "p.keyword": "banana"
+          },
+          "node_ids": [
+            "P006"
+          ],
+          "edges": []
+        },
+        {
+          "evidence_id": "R4",
+          "values": {
+            "p.id": "P007",
+            "p.name": "Fruit Snack Bar",
+            "p.keyword": "banana"
+          },
+          "node_ids": [
+            "P007"
+          ],
+          "edges": []
+        },
+        {
+          "evidence_id": "R5",
+          "values": {
+            "p.id": "P008",
+            "p.name": "Fruit Bread",
+            "p.keyword": "banana"
+          },
+          "node_ids": [
+            "P008"
+          ],
+          "edges": []
+        }
+      ],
+      "total_rows": 5,
+      "matched_bindings": 5,
+      "truncated": false
+    },
+    "answer": "| p.id | p.name | p.keyword | Evidence |\n| --- | --- | --- | --- |\n| P004 | Organic Fruit Bunch | banana | [R1] |\n| P005 | Crispy Fruit Chips | banana | [R2] |\n| P006 | Breakfast Smoothie | banana | [R3] |\n| P007 | Fruit Snack Bar | banana | [R4] |\n| P008 | Fruit Bread | banana | [R5] |\n\n**Evidence sources** (graph node IDs):\n- [R1]: P004\n- [R2]: P005\n- [R3]: P006\n- [R4]: P007\n- [R5]: P008"
+  },
+  {
+    "question": "How many products contain the keyword banana?",
+    "backend": "offline-demo (deterministic; no LLM calls)",
+    "query": {
+      "nodes": [
+        {
+          "alias": "p",
+          "kind": "Product"
+        }
+      ],
+      "edges": [],
+      "filters": [
+        {
+          "alias": "p",
+          "field": "keyword",
+          "op": "eq",
+          "value": "banana"
+        }
+      ],
+      "select": [],
+      "aggregate": {
+        "op": "count",
+        "alias": "p",
+        "field": null
+      },
+      "distinct": true,
+      "order_by": [],
+      "limit": 20
+    },
+    "retrieval": {
+      "rows": [
+        {
+          "evidence_id": "R1",
+          "values": {
+            "count(p)": 5
+          },
+          "node_ids": [
+            "P004",
+            "P005",
+            "P006",
+            "P007",
+            "P008"
+          ],
+          "edges": []
+        }
+      ],
+      "total_rows": 1,
+      "matched_bindings": 5,
+      "truncated": false
+    },
+    "answer": "| count(p) | Evidence |\n| --- | --- |\n| 5 | [R1] |\n\n**Evidence sources** (graph node IDs):\n- [R1]: P004, P005, P006, P007, P008"
+  },
+  {
+    "question": "Which products did Alice Johnson order?",
+    "backend": "offline-demo (deterministic; no LLM calls)",
+    "query": {
+      "nodes": [
+        {
+          "alias": "c",
+          "kind": "Customer"
+        },
+        {
+          "alias": "o",
+          "kind": "Order"
+        },
+        {
+          "alias": "p",
+          "kind": "Product"
+        }
+      ],
+      "edges": [
+        {
+          "alias": "co",
+          "source": "c",
+          "target": "o",
+          "relationship": "PLACED"
+        },
+        {
+          "alias": "op",
+          "source": "o",
+          "target": "p",
+          "relationship": "CONTAINS"
+        }
+      ],
+      "filters": [
+        {
+          "alias": "c",
+          "field": "name",
+          "op": "eq",
+          "value": "Alice Johnson"
+        }
+      ],
+      "select": [
+        {
+          "alias": "p",
+          "field": "id"
+        },
+        {
+          "alias": "p",
+          "field": "name"
+        }
+      ],
+      "aggregate": null,
+      "distinct": true,
+      "order_by": [
+        {
+          "alias": "p",
+          "field": "id",
+          "direction": "asc"
+        }
+      ],
+      "limit": 20
+    },
+    "retrieval": {
+      "rows": [
+        {
+          "evidence_id": "R1",
+          "values": {
+            "p.id": "P001",
+            "p.name": "Wireless Headphones"
+          },
+          "node_ids": [
+            "CU001",
+            "O001",
+            "P001"
+          ],
+          "edges": [
+            {
+              "source": "CU001",
+              "relationship": "PLACED",
+              "target": "O001"
+            },
+            {
+              "source": "O001",
+              "relationship": "CONTAINS",
+              "target": "P001"
+            }
+          ]
+        },
+        {
+          "evidence_id": "R2",
+          "values": {
+            "p.id": "P002",
+            "p.name": "Mechanical Keyboard"
+          },
+          "node_ids": [
+            "CU001",
+            "O003",
+            "P002"
+          ],
+          "edges": [
+            {
+              "source": "CU001",
+              "relationship": "PLACED",
+              "target": "O003"
+            },
+            {
+              "source": "O003",
+              "relationship": "CONTAINS",
+              "target": "P002"
+            }
+          ]
+        },
+        {
+          "evidence_id": "R3",
+          "values": {
+            "p.id": "P003",
+            "p.name": "Ceramic Coffee Mug"
+          },
+          "node_ids": [
+            "CU001",
+            "O001",
+            "P003"
+          ],
+          "edges": [
+            {
+              "source": "CU001",
+              "relationship": "PLACED",
+              "target": "O001"
+            },
+            {
+              "source": "O001",
+              "relationship": "CONTAINS",
+              "target": "P003"
+            }
+          ]
+        },
+        {
+          "evidence_id": "R4",
+          "values": {
+            "p.id": "P011",
+            "p.name": "Trail Water Bottle"
+          },
+          "node_ids": [
+            "CU001",
+            "O003",
+            "P011"
+          ],
+          "edges": [
+            {
+              "source": "CU001",
+              "relationship": "PLACED",
+              "target": "O003"
+            },
+            {
+              "source": "O003",
+              "relationship": "CONTAINS",
+              "target": "P011"
+            }
+          ]
+        }
+      ],
+      "total_rows": 4,
+      "matched_bindings": 4,
+      "truncated": false
+    },
+    "answer": "| p.id | p.name | Evidence |\n| --- | --- | --- |\n| P001 | Wireless Headphones | [R1] |\n| P002 | Mechanical Keyboard | [R2] |\n| P003 | Ceramic Coffee Mug | [R3] |\n| P011 | Trail Water Bottle | [R4] |\n\n**Evidence sources** (graph node IDs):\n- [R1]: CU001, O001, P001\n- [R2]: CU001, O003, P002\n- [R3]: CU001, O001, P003\n- [R4]: CU001, O003, P011"
+  },
+  {
+    "question": "Which customers have delivered orders containing products with the keyword banana?",
+    "backend": "offline-demo (deterministic; no LLM calls)",
+    "query": {
+      "nodes": [
+        {
+          "alias": "c",
+          "kind": "Customer"
+        },
+        {
+          "alias": "o",
+          "kind": "Order"
+        },
+        {
+          "alias": "p",
+          "kind": "Product"
+        }
+      ],
+      "edges": [
+        {
+          "alias": "co",
+          "source": "c",
+          "target": "o",
+          "relationship": "PLACED"
+        },
+        {
+          "alias": "op",
+          "source": "o",
+          "target": "p",
+          "relationship": "CONTAINS"
+        }
+      ],
+      "filters": [
+        {
+          "alias": "o",
+          "field": "status",
+          "op": "eq",
+          "value": "delivered"
+        },
+        {
+          "alias": "p",
+          "field": "keyword",
+          "op": "eq",
+          "value": "banana"
+        }
+      ],
+      "select": [
+        {
+          "alias": "c",
+          "field": "id"
+        },
+        {
+          "alias": "c",
+          "field": "name"
+        }
+      ],
+      "aggregate": null,
+      "distinct": true,
+      "order_by": [
+        {
+          "alias": "c",
+          "field": "id",
+          "direction": "asc"
+        }
+      ],
+      "limit": 20
+    },
+    "retrieval": {
+      "rows": [
+        {
+          "evidence_id": "R1",
+          "values": {
+            "c.id": "CU002",
+            "c.name": "Bob Smith"
+          },
+          "node_ids": [
+            "CU002",
+            "O002",
+            "O007",
+            "P004",
+            "P005"
+          ],
+          "edges": [
+            {
+              "source": "CU002",
+              "relationship": "PLACED",
+              "target": "O002"
+            },
+            {
+              "source": "CU002",
+              "relationship": "PLACED",
+              "target": "O007"
+            },
+            {
+              "source": "O002",
+              "relationship": "CONTAINS",
+              "target": "P004"
+            },
+            {
+              "source": "O002",
+              "relationship": "CONTAINS",
+              "target": "P005"
+            },
+            {
+              "source": "O007",
+              "relationship": "CONTAINS",
+              "target": "P004"
+            }
+          ]
+        },
+        {
+          "evidence_id": "R2",
+          "values": {
+            "c.id": "CU003",
+            "c.name": "Carla Gomez"
+          },
+          "node_ids": [
+            "CU003",
+            "O004",
+            "P006",
+            "P007"
+          ],
+          "edges": [
+            {
+              "source": "CU003",
+              "relationship": "PLACED",
+              "target": "O004"
+            },
+            {
+              "source": "O004",
+              "relationship": "CONTAINS",
+              "target": "P006"
+            },
+            {
+              "source": "O004",
+              "relationship": "CONTAINS",
+              "target": "P007"
+            }
+          ]
+        }
+      ],
+      "total_rows": 2,
+      "matched_bindings": 5,
+      "truncated": false
+    },
+    "answer": "| c.id | c.name | Evidence |\n| --- | --- | --- |\n| CU002 | Bob Smith | [R1] |\n| CU003 | Carla Gomez | [R2] |\n\n**Evidence sources** (graph node IDs):\n- [R1]: CU002, O002, O007, P004, P005\n- [R2]: CU003, O004, P006, P007"
+  },
+  {
+    "question": "What is the total value of delivered orders?",
+    "backend": "offline-demo (deterministic; no LLM calls)",
+    "query": {
+      "nodes": [
+        {
+          "alias": "o",
+          "kind": "Order"
+        }
+      ],
+      "edges": [],
+      "filters": [
+        {
+          "alias": "o",
+          "field": "status",
+          "op": "eq",
+          "value": "delivered"
+        }
+      ],
+      "select": [],
+      "aggregate": {
+        "op": "sum",
+        "alias": "o",
+        "field": "total_cents"
+      },
+      "distinct": true,
+      "order_by": [],
+      "limit": 20
+    },
+    "retrieval": {
+      "rows": [
+        {
+          "evidence_id": "R1",
+          "values": {
+            "sum(o.total_cents)": 30996
+          },
+          "node_ids": [
+            "O001",
+            "O002",
+            "O004",
+            "O005",
+            "O007"
+          ],
+          "edges": []
+        }
+      ],
+      "total_rows": 1,
+      "matched_bindings": 5,
+      "truncated": false
+    },
+    "answer": "| sum(o.total) (USD) | Evidence |\n| --- | --- |\n| USD 309.96 | [R1] |\n\n**Evidence sources** (graph node IDs):\n- [R1]: O001, O002, O004, O005, O007"
+  },
+  {
+    "question": "Which vendors supply Wireless Headphones?",
+    "backend": "offline-demo (deterministic; no LLM calls)",
+    "query": {
+      "nodes": [
+        {
+          "alias": "v",
+          "kind": "Vendor"
+        },
+        {
+          "alias": "p",
+          "kind": "Product"
+        }
+      ],
+      "edges": [
+        {
+          "alias": "vp",
+          "source": "v",
+          "target": "p",
+          "relationship": "SUPPLIES"
+        }
+      ],
+      "filters": [
+        {
+          "alias": "p",
+          "field": "name",
+          "op": "eq",
+          "value": "Wireless Headphones"
+        }
+      ],
+      "select": [
+        {
+          "alias": "v",
+          "field": "id"
+        },
+        {
+          "alias": "v",
+          "field": "name"
+        }
+      ],
+      "aggregate": null,
+      "distinct": true,
+      "order_by": [
+        {
+          "alias": "v",
+          "field": "id",
+          "direction": "asc"
+        }
+      ],
+      "limit": 20
+    },
+    "retrieval": {
+      "rows": [
+        {
+          "evidence_id": "R1",
+          "values": {
+            "v.id": "V001",
+            "v.name": "Vendor Y"
+          },
+          "node_ids": [
+            "P001",
+            "V001"
+          ],
+          "edges": [
+            {
+              "source": "V001",
+              "relationship": "SUPPLIES",
+              "target": "P001"
+            }
+          ]
+        },
+        {
+          "evidence_id": "R2",
+          "values": {
+            "v.id": "V003",
+            "v.name": "Digital Depot"
+          },
+          "node_ids": [
+            "P001",
+            "V003"
+          ],
+          "edges": [
+            {
+              "source": "V003",
+              "relationship": "SUPPLIES",
+              "target": "P001"
+            }
+          ]
+        }
+      ],
+      "total_rows": 2,
+      "matched_bindings": 2,
+      "truncated": false
+    },
+    "answer": "| v.id | v.name | Evidence |\n| --- | --- | --- |\n| V001 | Vendor Y | [R1] |\n| V003 | Digital Depot | [R2] |\n\n**Evidence sources** (graph node IDs):\n- [R1]: P001, V001\n- [R2]: P001, V003"
+  },
+  {
+    "question": "What products are in Electronics and cost less than $50?",
+    "backend": "offline-demo (deterministic; no LLM calls)",
+    "query": {
+      "nodes": [
+        {
+          "alias": "p",
+          "kind": "Product"
+        },
+        {
+          "alias": "cat",
+          "kind": "Category"
+        }
+      ],
+      "edges": [
+        {
+          "alias": "pc",
+          "source": "p",
+          "target": "cat",
+          "relationship": "IN_CATEGORY"
+        }
+      ],
+      "filters": [
+        {
+          "alias": "cat",
+          "field": "name",
+          "op": "eq",
+          "value": "Electronics"
+        },
+        {
+          "alias": "p",
+          "field": "price_cents",
+          "op": "lt",
+          "value": 5000
+        }
+      ],
+      "select": [
+        {
+          "alias": "p",
+          "field": "id"
+        },
+        {
+          "alias": "p",
+          "field": "name"
+        },
+        {
+          "alias": "p",
+          "field": "price_cents"
+        }
+      ],
+      "aggregate": null,
+      "distinct": true,
+      "order_by": [
+        {
+          "alias": "p",
+          "field": "id",
+          "direction": "asc"
+        }
+      ],
+      "limit": 20
+    },
+    "retrieval": {
+      "rows": [
+        {
+          "evidence_id": "R1",
+          "values": {
+            "p.id": "P009",
+            "p.name": "Wireless Mouse",
+            "p.price_cents": 2999
+          },
+          "node_ids": [
+            "C001",
+            "P009"
+          ],
+          "edges": [
+            {
+              "source": "P009",
+              "relationship": "IN_CATEGORY",
+              "target": "C001"
+            }
+          ]
+        },
+        {
+          "evidence_id": "R2",
+          "values": {
+            "p.id": "P010",
+            "p.name": "Portable Speaker",
+            "p.price_cents": 4999
+          },
+          "node_ids": [
+            "C001",
+            "P010"
+          ],
+          "edges": [
+            {
+              "source": "P010",
+              "relationship": "IN_CATEGORY",
+              "target": "C001"
+            }
+          ]
+        }
+      ],
+      "total_rows": 2,
+      "matched_bindings": 2,
+      "truncated": false
+    },
+    "answer": "| p.id | p.name | p.price (USD) | Evidence |\n| --- | --- | --- | --- |\n| P009 | Wireless Mouse | USD 29.99 | [R1] |\n| P010 | Portable Speaker | USD 49.99 | [R2] |\n\n**Evidence sources** (graph node IDs):\n- [R1]: C001, P009\n- [R2]: C001, P010"
+  },
+  {
+    "question": "What items are in order O001, with quantities and line totals?",
+    "backend": "offline-demo (deterministic; no LLM calls)",
+    "query": {
+      "nodes": [
+        {
+          "alias": "o",
+          "kind": "Order"
+        },
+        {
+          "alias": "p",
+          "kind": "Product"
+        }
+      ],
+      "edges": [
+        {
+          "alias": "item",
+          "source": "o",
+          "target": "p",
+          "relationship": "CONTAINS"
+        }
+      ],
+      "filters": [
+        {
+          "alias": "o",
+          "field": "id",
+          "op": "eq",
+          "value": "O001"
+        }
+      ],
+      "select": [
+        {
+          "alias": "p",
+          "field": "id"
+        },
+        {
+          "alias": "p",
+          "field": "name"
+        },
+        {
+          "alias": "item",
+          "field": "quantity"
+        },
+        {
+          "alias": "item",
+          "field": "line_total_cents"
+        }
+      ],
+      "aggregate": null,
+      "distinct": true,
+      "order_by": [
+        {
+          "alias": "p",
+          "field": "id",
+          "direction": "asc"
+        }
+      ],
+      "limit": 20
+    },
+    "retrieval": {
+      "rows": [
+        {
+          "evidence_id": "R1",
+          "values": {
+            "p.id": "P001",
+            "p.name": "Wireless Headphones",
+            "item.quantity": 1,
+            "item.line_total_cents": 7999
+          },
+          "node_ids": [
+            "O001",
+            "P001"
+          ],
+          "edges": [
+            {
+              "source": "O001",
+              "relationship": "CONTAINS",
+              "target": "P001"
+            }
+          ]
+        },
+        {
+          "evidence_id": "R2",
+          "values": {
+            "p.id": "P003",
+            "p.name": "Ceramic Coffee Mug",
+            "item.quantity": 2,
+            "item.line_total_cents": 2500
+          },
+          "node_ids": [
+            "O001",
+            "P003"
+          ],
+          "edges": [
+            {
+              "source": "O001",
+              "relationship": "CONTAINS",
+              "target": "P003"
+            }
+          ]
+        }
+      ],
+      "total_rows": 2,
+      "matched_bindings": 2,
+      "truncated": false
+    },
+    "answer": "| p.id | p.name | item.quantity | item.line\\_total (USD) | Evidence |\n| --- | --- | --- | --- | --- |\n| P001 | Wireless Headphones | 1 | USD 79.99 | [R1] |\n| P003 | Ceramic Coffee Mug | 2 | USD 25.00 | [R2] |\n\n**Evidence sources** (graph node IDs):\n- [R1]: O001, P001\n- [R2]: O001, P003"
+  },
+  {
+    "question": "Which products from Brand X are supplied by Orchard Supply?",
+    "backend": "offline-demo (deterministic; no LLM calls)",
+    "query": {
+      "nodes": [
+        {
+          "alias": "p",
+          "kind": "Product"
+        },
+        {
+          "alias": "b",
+          "kind": "Brand"
+        },
+        {
+          "alias": "v",
+          "kind": "Vendor"
+        }
+      ],
+      "edges": [
+        {
+          "alias": "pb",
+          "source": "p",
+          "target": "b",
+          "relationship": "OF_BRAND"
+        },
+        {
+          "alias": "vp",
+          "source": "v",
+          "target": "p",
+          "relationship": "SUPPLIES"
+        }
+      ],
+      "filters": [
+        {
+          "alias": "b",
+          "field": "name",
+          "op": "eq",
+          "value": "Brand X"
+        },
+        {
+          "alias": "v",
+          "field": "name",
+          "op": "eq",
+          "value": "Orchard Supply"
+        }
+      ],
+      "select": [
+        {
+          "alias": "p",
+          "field": "id"
+        },
+        {
+          "alias": "p",
+          "field": "name"
+        }
+      ],
+      "aggregate": null,
+      "distinct": true,
+      "order_by": [
+        {
+          "alias": "p",
+          "field": "id",
+          "direction": "asc"
+        }
+      ],
+      "limit": 20
+    },
+    "retrieval": {
+      "rows": [],
+      "total_rows": 0,
+      "matched_bindings": 0,
+      "truncated": false
+    },
+    "answer": "No matching data was found in the graph."
+  }
+]
